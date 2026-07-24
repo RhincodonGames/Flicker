@@ -1,29 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // Basic Flying Movement
+    [Header("References")]
     public CharacterController controller;
-    public Animator animator;
+    public Transform cameraTransform; // drag Main Camera here
 
-    public float gravity = -9.81f;
-    private Vector3 velocity;
-
-    public float movementSpeed = 10f;
-
+    [Header("Movement")]
+    public float movementSpeed = 6f;
     public float turnSmoothTime = 0.1f;
-    public float turnSmoothVelocity;
+    private float turnSmoothVelocity;
 
-    //private PlayerState playerState;
-
-    private void Start()
-    {
-        //playerState = PlayerState.Instance;
-
-        turnSmoothVelocity = 0f;
-    }
+    [Header("Light Gravity / Bob")]
+    public float gravity = -2f;       // much lighter than a normal character — you're flying
+    public float bobHeight = 0.15f;
+    public float bobSpeed = 4f;
+    private float bobTimer;
+    private Vector3 velocity;
 
     void Update()
     {
@@ -32,48 +25,42 @@ public class PlayerMovement : MonoBehaviour
 
     void BasicMovement()
     {
-        // Get Player Input
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        // Calculates movement direction (normalizes so diagonal movement isn't faster)
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        Vector3 inputDir = new Vector3(horizontal, 0f, vertical);
+        inputDir = Vector3.ClampMagnitude(inputDir, 1f);
 
-        // Only moves/rotates if players is pressing keys
-        if (direction.magnitude >= 0.1f)
+        // Camera-relative direction — note we do NOT flatten camForward's y,
+        // so looking down with the camera actually moves the firefly downward
+        Vector3 camForward = cameraTransform.forward;
+        Vector3 camRight = cameraTransform.right;
+
+        Vector3 moveDir = (camForward * inputDir.z + camRight * inputDir.x);
+
+        if (moveDir.magnitude >= 0.1f)
         {
-            // Calculate angle to face
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-
-            // Smoothly rotate towards calculated angle
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-
-            // Clamp angle to valid range to prevent quarternion errors
-            if (float.IsNaN(angle) || float.IsInfinity(angle))
+            // Face the direction of travel (flattened rotation, so the model doesn't pitch weirdly)
+            Vector3 flatDir = new Vector3(moveDir.x, 0f, moveDir.z);
+            if (flatDir.magnitude > 0.01f)
             {
-                angle = targetAngle;
+                float targetAngle = Mathf.Atan2(flatDir.x, flatDir.z) * Mathf.Rad2Deg;
+                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                if (!float.IsNaN(angle) && !float.IsInfinity(angle))
+                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
             }
-            angle = Mathf.Repeat(angle, 360f);
 
-            // Quaternion (how Unity stores rotations using Euler values) vs. Euler (degrees we can read, X, Y, Z)
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-            float currentSpeed = GetCurrentSpeed();
-
-            // Move in that direction
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * currentSpeed * Time.deltaTime);
-
-            // Insert Animations Here Later
+            controller.Move(moveDir.normalized * movementSpeed * Time.deltaTime);
         }
-        else
-        {
-            // Insert Idle Animation (when not moving)
-        }
-    }
 
-    float GetCurrentSpeed()
-    {
-        return movementSpeed;
+        // Light gravity pull, mostly counteracted so it just feels like a gentle sink instead of true falling
+        velocity.y += gravity * Time.deltaTime;
+        velocity.y = Mathf.Clamp(velocity.y, gravity * 2f, 0f); // never accumulates into a hard fall
+
+        // Idle/movement bob — subtle up-down while flying, gives that insect hover feel
+        bobTimer += Time.deltaTime * bobSpeed * (moveDir.magnitude > 0.1f ? 1f : 0.4f);
+        float bobOffset = Mathf.Sin(bobTimer) * bobHeight * Time.deltaTime;
+
+        controller.Move(new Vector3(0, velocity.y * Time.deltaTime + bobOffset, 0));
     }
 }
