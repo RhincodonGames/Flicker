@@ -21,6 +21,10 @@ public class FireflyLight : MonoBehaviour
     public float ambientIntensity = 0.3f;     // faint glow even at brightness 0, so you're not pure black
     public float ambientRange = 1.5f;
 
+    [Header("Idle Self-Pulse (subtle — fades out while actively brightening)")]
+    public float idlePulseAmplitude = 0.15f;
+    public float idlePulseSpeed = 1.2f;
+
     public bool IsAlive { get; private set; } = true;
 
     void Update()
@@ -52,7 +56,13 @@ public class FireflyLight : MonoBehaviour
     void UpdateLightVisual()
     {
         if (glowLight == null) return;
-        glowLight.intensity = ambientIntensity + (maxIntensity - ambientIntensity) * brightness;
+
+        float idlePulse = Mathf.Sin(Time.time * idlePulseSpeed) * idlePulseAmplitude;
+        // Pulse fades out the brighter you're actively glowing, so it never fights your manual flicker control
+        idlePulse *= (1f - brightness);
+
+        float targetIntensity = ambientIntensity + (maxIntensity - ambientIntensity) * brightness + idlePulse;
+        glowLight.intensity = Mathf.Max(0f, targetIntensity);
         glowLight.range = ambientRange + (maxRange - ambientRange) * brightness;
     }
 

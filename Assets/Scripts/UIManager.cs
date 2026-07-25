@@ -12,12 +12,12 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI friendsText;
 
     [Header("Lives")]
-    public Image[] lifeIcons; // drag all life icon Images in, left to right
+    public LivesUI livesUI; // drag your LivesContainer (with the LivesUI script) in
 
     [Header("Dawn Clock")]
     public TextMeshProUGUI dawnClockText;
     public DayNightDial dayNightDial;
-    public GameManager gameManagerRef;
+    public GameManager gameManagerRef; // needed so the dial knows total dawn duration
 
     [Header("End Screen")]
     public GameObject endPanel;
@@ -43,10 +43,10 @@ public class UIManager : MonoBehaviour
         if (friendsText != null) friendsText.text = "Friends: " + count;
     }
 
-    public void UpdateLivesDisplay(int current, int max)
+    public void RefreshLivesUI(int maxLives, int currentLives)
     {
-        for (int i = 0; i < lifeIcons.Length; i++)
-            lifeIcons[i].enabled = i < current;
+        if (livesUI != null)
+            livesUI.UpdateLives(maxLives, currentLives);
     }
 
     public void UpdateDawnClock(float secondsRemaining)

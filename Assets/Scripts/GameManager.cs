@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Dawn Timer")]
-    public float dawnTimerSeconds = 210f; // e.g. 3.5 minutes
+    public float dawnTimerSeconds = 300f; // 5 minutes 
     private float timeRemaining;
 
     [Header("Bird Spawning")]
@@ -78,6 +78,7 @@ public class GameManager : MonoBehaviour
     {
         fireflyFriendsCollected++;
         player.GetComponent<FireflyLight>().IncreaseMaxLight();
+        player.GetComponent<FireflyHealth>().CollectFriend();
         UIManager.Instance.UpdateFriendsText(fireflyFriendsCollected);
     }
 
