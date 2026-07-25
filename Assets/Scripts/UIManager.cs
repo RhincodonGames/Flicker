@@ -16,6 +16,8 @@ public class UIManager : MonoBehaviour
 
     [Header("Dawn Clock")]
     public TextMeshProUGUI dawnClockText;
+    public DayNightDial dayNightDial;
+    public GameManager gameManagerRef;
 
     [Header("End Screen")]
     public GameObject endPanel;
@@ -49,11 +51,16 @@ public class UIManager : MonoBehaviour
 
     public void UpdateDawnClock(float secondsRemaining)
     {
-        if (dawnClockText == null) return;
-        secondsRemaining = Mathf.Max(0f, secondsRemaining);
-        int minutes = Mathf.FloorToInt(secondsRemaining / 60f);
-        int seconds = Mathf.FloorToInt(secondsRemaining % 60f);
-        dawnClockText.text = $"{minutes:00}:{seconds:00}";
+        if (dawnClockText != null)
+        {
+            secondsRemaining = Mathf.Max(0f, secondsRemaining);
+            int minutes = Mathf.FloorToInt(secondsRemaining / 60f);
+            int seconds = Mathf.FloorToInt(secondsRemaining % 60f);
+            dawnClockText.text = $"{minutes:00}:{seconds:00}";
+        }
+
+        if (dayNightDial != null && gameManagerRef != null)
+            dayNightDial.UpdateDial(secondsRemaining, gameManagerRef.dawnTimerSeconds);
     }
 
     public void ShowEndScreen(string message, int friendsCollected)
