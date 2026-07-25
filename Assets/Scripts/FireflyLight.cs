@@ -27,11 +27,11 @@ public class FireflyLight : MonoBehaviour
     {
         if (!IsAlive) return;
 
-        bool holdingSpace = Input.GetKey(KeyCode.Space);
+        bool holdingLight = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         // Brightness rises while held, fades when released — this is what creates the
         // "tap for small burst, hold for sustained light" feel
-        if (holdingSpace && currentLightLevel > 0f)
+        if (holdingLight && currentLightLevel > 0f)
             brightness = Mathf.MoveTowards(brightness, 1f, brightenSpeed * Time.deltaTime);
         else
             brightness = Mathf.MoveTowards(brightness, 0f, fadeSpeed * Time.deltaTime);
