@@ -28,6 +28,7 @@ public class CameraBehavior : MonoBehaviour
     private void LateUpdate()
     {
         if (target == null) return;
+        if (PauseMenuManager.IsPaused) return;
 
         yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
         pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
