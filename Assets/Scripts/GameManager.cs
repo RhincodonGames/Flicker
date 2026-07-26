@@ -9,6 +9,10 @@ public class GameManager : MonoBehaviour
     public float dawnTimerSeconds = 300f; // 5 minutes 
     private float timeRemaining;
 
+    [Header("Sky")]
+    public SkyboxController skyboxController;
+
+
     [Header("Bird Spawning")]
     public GameObject birdPrefab;
     public Transform player;
@@ -38,6 +42,9 @@ public class GameManager : MonoBehaviour
 
         timeRemaining -= Time.deltaTime;
         UIManager.Instance.UpdateDawnClock(timeRemaining);
+
+        if (skyboxController != null)
+            skyboxController.UpdateSky(timeRemaining, dawnTimerSeconds);
 
         if (timeRemaining <= 0f)
         {

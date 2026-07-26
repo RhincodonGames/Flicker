@@ -25,6 +25,12 @@ public class FireflyLight : MonoBehaviour
     public float idlePulseAmplitude = 0.15f;
     public float idlePulseSpeed = 1.2f;
 
+    [Header("Emissive Body Material")]
+    public Renderer bodyRenderer; 
+    public Color emissionColor = new Color(1f, 0.85f, 0.3f);
+    private Material bodyMaterialInstance;
+
+
     public bool IsAlive { get; private set; } = true;
 
     void Update()
@@ -64,6 +70,13 @@ public class FireflyLight : MonoBehaviour
         float targetIntensity = ambientIntensity + (maxIntensity - ambientIntensity) * brightness + idlePulse;
         glowLight.intensity = Mathf.Max(0f, targetIntensity);
         glowLight.range = ambientRange + (maxRange - ambientRange) * brightness;
+
+        if (bodyMaterialInstance != null)
+        {
+            float emissionStrength = ambientIntensity + (maxIntensity - ambientIntensity) * brightness;
+            bodyMaterialInstance.SetColor("_EmissionColor", emissionColor * emissionStrength);
+        }
+
     }
 
     public void AddFuel(float amount)
@@ -88,4 +101,13 @@ public class FireflyLight : MonoBehaviour
 
     // Birds use this to know how attracted they should be
     public float GetBrightness() => brightness;
+
+    void Awake()
+    {
+        if (bodyRenderer != null)
+        {
+            bodyMaterialInstance = bodyRenderer.material; 
+            bodyMaterialInstance.EnableKeyword("_EMISSION");
+        }
+    }
 }

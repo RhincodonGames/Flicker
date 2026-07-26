@@ -19,6 +19,10 @@ public class CameraBehavior : MonoBehaviour
     private float yaw = 0f;
     private float pitch = 15f;
 
+    [Header("Clipping Prevention")]
+    public LayerMask collisionMask;
+    public float cameraRadius = 0.3f;
+
     private void Start()
     {
         currentDistance = baseDistance;
@@ -40,7 +44,20 @@ public class CameraBehavior : MonoBehaviour
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
         Vector3 desiredOffset = rotation * new Vector3(0f, 0f, -currentDistance);
-        transform.position = target.position + desiredOffset;
+
+        Vector3 desiredCameraPos = target.position + desiredOffset;
+        Vector3 directionToCamera = desiredCameraPos - target.position;
+        float distanceToCamera = directionToCamera.magnitude;
+
+        if (Physics.SphereCast(target.position, cameraRadius, directionToCamera.normalized, out RaycastHit hit, distanceToCamera, collisionMask))
+        {
+            transform.position = target.position + directionToCamera.normalized * (hit.distance - 0.1f);
+        }
+        else
+        {
+            transform.position = desiredCameraPos;
+        }
+
         transform.rotation = Quaternion.LookRotation(target.position - transform.position);
     }
 }

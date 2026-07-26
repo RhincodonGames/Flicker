@@ -10,30 +10,44 @@ public class FireflySpawner : MonoBehaviour
     public int friendCount = 6;
     public int grubCount = 14;
 
-    [Header("Spawn Area")]
-    public Vector2 areaSize = new Vector2(30f, 30f); // width/depth centered on this object's position
-    public float minHeight = 1f;
-    public float maxHeight = 4f;
+    [Header("Spawn Area (shared footprint)")]
+    public Vector2 areaSize = new Vector2(30f, 30f);
+
+    [Header("Firefly Friend Height (they fly)")]
+    public float friendMinHeight = 1f;
+    public float friendMaxHeight = 4f;
+
+    [Header("Grub Ground Level")]
+    public float groundY = 0f; // set this to match your actual ground plane's Y position
 
     void Start()
     {
         for (int i = 0; i < friendCount; i++)
-            SpawnAt(friendPrefab);
+            SpawnFriend();
 
         for (int i = 0; i < grubCount; i++)
-            SpawnAt(grubPrefab);
+            SpawnGrub();
     }
 
-    void SpawnAt(GameObject prefab)
+    void SpawnFriend()
     {
-        if (prefab == null) return;
-
-        Vector3 randomPos = transform.position + new Vector3(
+        if (friendPrefab == null) return;
+        Vector3 pos = transform.position + new Vector3(
             Random.Range(-areaSize.x / 2f, areaSize.x / 2f),
-            Random.Range(minHeight, maxHeight),
+            Random.Range(friendMinHeight, friendMaxHeight),
             Random.Range(-areaSize.y / 2f, areaSize.y / 2f)
         );
+        Instantiate(friendPrefab, pos, Quaternion.identity);
+    }
 
-        Instantiate(prefab, randomPos, Quaternion.identity);
+    void SpawnGrub()
+    {
+        if (grubPrefab == null) return;
+        Vector3 pos = transform.position + new Vector3(
+            Random.Range(-areaSize.x / 2f, areaSize.x / 2f),
+            groundY,
+            Random.Range(-areaSize.y / 2f, areaSize.y / 2f)
+        );
+        Instantiate(grubPrefab, pos, Quaternion.identity);
     }
 }
