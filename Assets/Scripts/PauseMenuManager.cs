@@ -57,4 +57,13 @@ public class PauseMenuManager : MonoBehaviour
         Cursor.visible = true;
         SceneManager.LoadScene("MenuScene");
     }
+
+    public void FreezeForEndScreen()
+    {
+        Time.timeScale = 0f;
+        IsPaused = true; // reuses the same static flag your CameraFollow already checks, so look-around also stops
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 }

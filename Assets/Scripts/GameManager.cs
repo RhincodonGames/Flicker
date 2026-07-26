@@ -6,18 +6,18 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Dawn Timer")]
-    public float dawnTimerSeconds = 300f; // 5 minutes 
+    public float dawnTimerSeconds = 120f; // 2 mins
     private float timeRemaining;
 
     [Header("Sky")]
     public SkyboxController skyboxController;
 
 
-    [Header("Bird Spawning")]
-    public GameObject birdPrefab;
+    [Header("Bat Spawning")]
+    public GameObject batPrefab;
     public Transform player;
-    public float initialSpawnInterval = 8f;   // seconds between spawns at game start
-    public float minSpawnInterval = 1.5f;     // fastest spawn rate, reached near dawn
+    public float initialSpawnInterval = 8f;
+    public float minSpawnInterval = 1.5f;
     private float spawnTimer;
 
     [Header("Progress")]
@@ -52,33 +52,32 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        HandleBirdSpawning();
+        HandleBatSpawning();
     }
 
-    void HandleBirdSpawning()
+    void HandleBatSpawning()
     {
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f)
         {
-            SpawnBird();
+            SpawnBat();
 
-            // Closer to dawn (timeRemaining near 0) = shorter interval = more birds
+            // Closer to dawn (timeRemaining near 0) = shorter interval = more bats
             float t = 1f - Mathf.Clamp01(timeRemaining / dawnTimerSeconds); // 0 at start, 1 at dawn
             spawnTimer = Mathf.Lerp(initialSpawnInterval, minSpawnInterval, t);
         }
     }
 
-    void SpawnBird()
+    void SpawnBat()
     {
-        if (birdPrefab == null || player == null) return;
+        if (batPrefab == null || player == null) return;
 
-        // Spawn at a random point on a ring around the player, slightly above
         Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(10f, 15f);
         Vector3 spawnPos = player.position + new Vector3(randomCircle.x, 3f, randomCircle.y);
 
-        //GameObject bird = Instantiate(birdPrefab, spawnPos, Quaternion.identity);
-        //BirdAI ai = bird.GetComponent<BirdAI>();
-        //if (ai != null) ai.target = player;
+        GameObject bat = Instantiate(batPrefab, spawnPos, Quaternion.identity);
+        BatAI ai = bat.GetComponent<BatAI>();
+        if (ai != null) ai.target = player;
     }
 
     public void OnFriendCollected()
@@ -86,29 +85,28 @@ public class GameManager : MonoBehaviour
         fireflyFriendsCollected++;
         player.GetComponent<FireflyLight>().IncreaseMaxLight();
         player.GetComponent<FireflyHealth>().CollectFriend();
-        UIManager.Instance.UpdateFriendsText(fireflyFriendsCollected);
     }
 
     public void OnOutOfLight()
     {
-        EndGame("Your light went out...");
+        EndGame("Your light went out...", false);
     }
 
     public void OnOutOfLives()
     {
-        EndGame("The birds got you...");
+        EndGame("The bats got you...", false);
     }
 
     public void OnSurvivedToDawn()
     {
-        EndGame("You made it to dawn!");
+        EndGame("You made it to dawn!", true);
     }
 
-    void EndGame(string message)
+    void EndGame(string message, bool isWin)
     {
         if (isGameOver) return;
         isGameOver = true;
-        UIManager.Instance.ShowEndScreen(message, fireflyFriendsCollected);
+        UIManager.Instance.ShowEndScreen(message, fireflyFriendsCollected, isWin);
     }
 
     public void RestartGame()

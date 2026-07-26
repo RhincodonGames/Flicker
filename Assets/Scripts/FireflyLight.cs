@@ -12,7 +12,7 @@ public class FireflyLight : MonoBehaviour
     public float brightness = 0f;             // 0-1
     public float brightenSpeed = 2.5f;        // how fast it rises while holding Space
     public float fadeSpeed = 1.2f;            // how fast it falls after releasing Space
-    public float fuelCostPerSecondAtFullBrightness = 6f;
+    public float fuelCostPerSecondAtFullBrightness = 3f;
 
     [Header("Light Component")]
     public Light glowLight;

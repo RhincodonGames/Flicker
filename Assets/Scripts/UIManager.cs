@@ -6,10 +6,11 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    public PauseMenuManager pausedMenuManager;
+
     [Header("Light + Friends")]
     public Slider lightLevelBar;
     public FireflyLight playerLight;
-    public TextMeshProUGUI friendsText;
 
     [Header("Lives")]
     public LivesUI livesUI; // drag your LivesContainer (with the LivesUI script) in
@@ -21,7 +22,9 @@ public class UIManager : MonoBehaviour
 
     [Header("End Screen")]
     public GameObject endPanel;
-    public TextMeshProUGUI endMessageText;
+
+    [Header("Win Screen")]
+    public GameObject winPanel;
 
     void Awake()
     {
@@ -33,15 +36,8 @@ public class UIManager : MonoBehaviour
     {
         if (playerLight != null && lightLevelBar != null)
             lightLevelBar.value = playerLight.currentLightLevel / playerLight.maxLightLevel;
-
-        if (GameManager.Instance != null && GameManager.Instance.isGameOver && Input.GetMouseButtonDown(0))
-            GameManager.Instance.RestartGame();
     }
 
-    public void UpdateFriendsText(int count)
-    {
-        if (friendsText != null) friendsText.text = "Friends: " + count;
-    }
 
     public void RefreshLivesUI(int maxLives, int currentLives)
     {
@@ -63,10 +59,17 @@ public class UIManager : MonoBehaviour
             dayNightDial.UpdateDial(secondsRemaining, gameManagerRef.dawnTimerSeconds);
     }
 
-    public void ShowEndScreen(string message, int friendsCollected)
+    public void ShowEndScreen(string message, int friendsCollected, bool isWin)
     {
-        if (endPanel != null) endPanel.SetActive(true);
-        if (endMessageText != null)
-            endMessageText.text = $"{message}\nFriends collected: {friendsCollected}\nClick to restart";
+        if (isWin)
+        {
+            if (winPanel != null) winPanel.SetActive(true);
+        }
+        else
+        {
+            if (endPanel != null) endPanel.SetActive(true);
+        }
+
+        pausedMenuManager.FreezeForEndScreen();
     }
 }
