@@ -5,8 +5,13 @@ public class FireflyHealth : MonoBehaviour
     public int maxLives = 1;
     public int currentLives;
     public int absoluteLivesCap = 10;
-    public float invulnerabilityDuration = 1.5f; // brief invulnerability after a hit so one bird can't chain-hit you
+    public float invulnerabilityDuration = 1.5f;
     private float invulnTimer = 0f;
+
+    public FireflySwarm swarm;
+
+    public bool IsAtMaxLives => currentLives >= absoluteLivesCap;
+    public bool IsInvulnerable => invulnTimer > 0f;
 
     void Start()
     {
@@ -19,32 +24,33 @@ public class FireflyHealth : MonoBehaviour
         if (invulnTimer > 0f) invulnTimer -= Time.deltaTime;
     }
 
-    public bool IsInvulnerable => invulnTimer > 0f;
-
-    public void TakeHit()
-    {
-        if (IsInvulnerable) return;
-
-        currentLives--;
-        invulnTimer = invulnerabilityDuration;
-        UIManager.Instance.RefreshLivesUI(currentLives, maxLives);
-
-        if (currentLives <= 0)
-            GameManager.Instance.OnOutOfLives();
-    }
-
     public void CollectFriend()
     {
+        if (currentLives >= absoluteLivesCap) return;
+
         if (currentLives < maxLives)
-        {
-            currentLives++; // heal a lost life first
-        }
+            currentLives++;
         else if (maxLives < absoluteLivesCap)
         {
             maxLives++;
-            currentLives++; // new slot arrives already "alive"
+            currentLives++;
         }
+
+        swarm.AddCompanion();
         UIManager.Instance.RefreshLivesUI(maxLives, currentLives);
+    }
+
+    public void TakeHit()
+    {
+        if (IsInvulnerable || currentLives <= 0) return;
+
+        currentLives--;
+        invulnTimer = invulnerabilityDuration;
+        swarm.RemoveCompanion();
+        UIManager.Instance.RefreshLivesUI(maxLives, currentLives);
+
+        if (currentLives <= 0)
+            GameManager.Instance.OnOutOfLives();
     }
 
     public void IncreaseMaxLives(int amount)
